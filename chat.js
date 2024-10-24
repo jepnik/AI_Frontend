@@ -1,34 +1,61 @@
 document.getElementById("sendButton").addEventListener("click", sendMessage);
+document.getElementById("userInput").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+});
 
 async function sendMessage() {
     const inputField = document.getElementById("userInput");
-    const message = inputField.ariaValueMax.trim();
+    const message = inputField.value.trim();
     if (message === "") return;
 
-    //Display user message
-    addMessageToChat("User: " + message);
+    // Display user message
+    addMessageToChat("User: " + message, false); //false indicates user
 
-    //Send message to the backend
-    const response = await fetch('http://localhost:5000/chat', {
-        method: 'POST', 
+    console.log("Sending message to server:", message);
+
+    try {
+
+    // Send message to the backend
+    const response = await fetch('http://10.196.32.141:5000/ask', {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({message: message})
+        body: JSON.stringify({ question: message })
     });
 
-    const data = await response.json();
-    addMessageToChat("Bot: " + data.response);
+    console.log("Recieved response:", response);
 
-    //Clear the input field
+    if (!response.ok) {
+        throw new Error('Server error: ${response.statusText}');
+    }
+
+    const data = await response.json();
+
+    //Display bot response
+    addMessageToChat("Bot: " + data.response, true); //true indicates bot
+
+} catch (error) {
+    console.error("Error during fetch", error);
+    addMessageToChat("Bot: Error connecting to the server.");
+}
+
+    // Clear the input field
     inputField.value = "";
 }
 
-function addMessageToChat(text) {
+function addMessageToChat(text, isBot = false) {
     const chatMessages = document.getElementById("chatMessages");
     const newMessage = document.createElement("div");
     newMessage.classList.add("message");
-    newMessage.text.content = text;
+
+    //let label = isBot ? '<span class="bot-label">Bot:</span>' : '<span class="user-label">User:</span>'; //Give them both their own label
+    //let messageText = text.replace(isBot ? "Bot:" : "User:", ""); //Remove the redundant "Bot:" or "User:" if it's included in text
+
+    newMessage.innerHTML = text.replace(/\n/g, "<br>"); //innerHTML to allow line breaks
+    newMessage.classList.add(isBot ? "bot-message" : "user-message"); //Add class for bot and user messages
     chatMessages.appendChild(newMessage);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
