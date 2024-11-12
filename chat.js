@@ -50,10 +50,6 @@ function addMessageToChat(text, isBot = false) {
     const chatMessages = document.getElementById("chatMessages");
     const newMessage = document.createElement("div");
     newMessage.classList.add("message");
-
-    //let label = isBot ? '<span class="bot-label">Bot:</span>' : '<span class="user-label">User:</span>'; //Give them both their own label
-    //let messageText = text.replace(isBot ? "Bot:" : "User:", ""); //Remove the redundant "Bot:" or "User:" if it's included in text
-
     newMessage.innerHTML = text.replace(/\n/g, "<br>"); //innerHTML to allow line breaks
     newMessage.classList.add(isBot ? "bot-message" : "user-message"); //Add class for bot and user messages
     chatMessages.appendChild(newMessage);
